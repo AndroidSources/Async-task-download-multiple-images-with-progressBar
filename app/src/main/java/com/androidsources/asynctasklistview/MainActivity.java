@@ -13,11 +13,14 @@ import java.util.List;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
@@ -29,6 +32,7 @@ public class MainActivity extends AppCompatActivity {
     CustomListViewAdapter listViewAdapter;
     ListView listView;
     Button button;
+    GetXMLTask task;
 
     public static final String URL =
             "http://www.androidsources.com/wp-content/uploads/2015/09/Android-Login-and-Registration.png";
@@ -47,14 +51,23 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 /*Creating and executing background task*/
-                GetXMLTask task = new GetXMLTask(MainActivity.this);
+                 task = new GetXMLTask(MainActivity.this);
                 task.execute(new String[]{URL, URL1, URL2});
             }
         });
-
-
     }
 
+//    @Override
+//    public boolean onKeyDown(int keyCode, KeyEvent event) {
+//        if (keyCode == KeyEvent.KEYCODE_BACK) {
+//            Log.d("GettingCancelled","onKeyDown");
+//            if (task!= null && task.getStatus() == AsyncTask.Status.RUNNING)
+//                task.cancel(true);
+//
+//        }
+//
+//        return super.onKeyDown(keyCode, event);
+//    }
 
     private class GetXMLTask extends AsyncTask<String, Integer, List<RowItem>> {
         ProgressDialog progressDialog;
@@ -76,8 +89,19 @@ public class MainActivity extends AppCompatActivity {
             progressDialog.setMax(100);
             progressDialog.setIcon(R.drawable.ic_arrow_drop_down_circle_24dp);
             progressDialog.setCancelable(true);
+            progressDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+
+                @Override
+                public void onCancel(DialogInterface dialog) {
+                    // TODO Auto-generated method stub
+                    Log.d("GettingCancelled","onCancel(DialogInterface dialog)");
+                    task.cancel(true);
+                    MainActivity.this.finish();
+                }
+            });
             progressDialog.show();
         }
+
 
         @Override
         protected List<RowItem> doInBackground(String... urls) {
@@ -89,6 +113,10 @@ public class MainActivity extends AppCompatActivity {
                 map = downloadImage(url);
                 //after downloading the bitmap is added to rowitems
                 rowItems.add(new RowItem(map));
+                if (isCancelled()==true){
+                    Log.d("GettingCancelled","isCancelled");
+                    break;
+                }
             }
             return rowItems;
         }
@@ -117,6 +145,7 @@ public class MainActivity extends AppCompatActivity {
 
                 while ((count = inputStream.read(data)) != -1) {
                     total += count;
+                    Log.d("Downloading","total "+total+" Count "+count);
                     publishProgress((int) ((total * 100) / lenghtOfFile));
                     outputStream.write(data, 0, count);
                 }
@@ -143,6 +172,8 @@ public class MainActivity extends AppCompatActivity {
             progressDialog.setProgress(progress[0]);
             if (rowItems != null) {
                 progressDialog.setMessage("Loading " + (rowItems.size() + 1) + "/" + noOfURLs);
+                Log.d("DownloadingFile", "Loading " + (rowItems.size() + 1) + "/" + noOfURLs);
+
             }
         }
 
