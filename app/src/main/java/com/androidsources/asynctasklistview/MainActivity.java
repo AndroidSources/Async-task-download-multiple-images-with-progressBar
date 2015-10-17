@@ -18,6 +18,8 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ListView;
 
 
@@ -26,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
 
     CustomListViewAdapter listViewAdapter;
     ListView listView;
+    Button button;
 
     public static final String URL =
             "http://www.androidsources.com/wp-content/uploads/2015/09/Android-Login-and-Registration.png";
@@ -39,10 +42,17 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         listView = (ListView) findViewById(R.id.imageList);
+        button=(Button)findViewById(R.id.button);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                /*Creating and executing background task*/
+                GetXMLTask task = new GetXMLTask(MainActivity.this);
+                task.execute(new String[]{URL, URL1, URL2});
+            }
+        });
 
-		/*Creating and executing background task*/
-        GetXMLTask task = new GetXMLTask(this);
-        task.execute(new String[]{URL, URL1, URL2});
+
     }
 
 
